@@ -1,0 +1,35 @@
+server:
+  error:
+    include-message: always
+    include-binding-errors: always
+    include-stacktrace: never
+
+spring:
+  jackson:
+    time-zone: America/Guayaquil
+    serialization:
+      write-dates-as-timestamps: false
+  datasource:
+    url: jdbc:mysql://paganini-instance-1.cqj4co2cy9f2.us-east-1.rds.amazonaws.com:3306/paganini
+    username: admin
+    password: pagaNINI2025
+  jpa:
+    hibernate:
+      ddl-auto: validate
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+    show-sql: true
+
+aws:
+  region: us-east-1
+  cognito:
+    userPoolId: us-east-1_cj7YOZppu
+    clientId: 7jqhejli4aohsqk137eg5f9fsf
+  sns:
+    platformApplicationArnAndroid: arn:aws:sns:us-east-1:091303277825:app/GCM/paganini-android
+logging:
+  level:
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+
+encryption:
+  key: cGFnYW5pbmlwYWdhbmluaQ==
