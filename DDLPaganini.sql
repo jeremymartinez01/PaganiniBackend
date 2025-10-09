@@ -4,6 +4,22 @@ CREATE DATABASE IF NOT EXISTS `paganini`
 
 USE `paganini`;
 
+CREATE TABLE `user` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `nombre` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `apellido` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `correo` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `telefono` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `cognito_username` varchar(128) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `codigo_qr` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `saldo` decimal(15,2) NOT NULL DEFAULT '0.00',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `Correo` (`correo`),
+  UNIQUE KEY `cognito_username` (`cognito_username`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
 CREATE TABLE `device_token` (
   `id` int NOT NULL AUTO_INCREMENT,
   `user_id` int NOT NULL,
@@ -19,20 +35,6 @@ CREATE TABLE `device_token` (
   CONSTRAINT `fk_dt_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE `user` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `nombre` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `apellido` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `correo` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `telefono` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `cognito_username` varchar(128) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `codigo_qr` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
-  `saldo` decimal(15,2) NOT NULL DEFAULT '0.00',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `Correo` (`correo`),
-  UNIQUE KEY `cognito_username` (`cognito_username`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `payment_request` (
   `id` int NOT NULL AUTO_INCREMENT,
@@ -91,6 +93,14 @@ CREATE TABLE `transacciones` (
   CONSTRAINT `fk_trans_sender` FOREIGN KEY (`SenderId`) REFERENCES `user` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE `Criptocoin` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `abreviacion` varchar(6) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `nombre` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
 CREATE TABLE `ewallet` (
   `MetodoPagoId` int NOT NULL,
   `Direccion` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -101,12 +111,6 @@ CREATE TABLE `ewallet` (
   CONSTRAINT `fk_ewallet_metodopago` FOREIGN KEY (`MetodoPagoId`) REFERENCES `metodo_pago` (`Id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE `Criptocoin` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `abreviacion` varchar(6) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `nombre` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 INSERT INTO `Criptocoin` (`abreviacion`, `nombre`) VALUES
   ('BTC',   'Bitcoin'),
