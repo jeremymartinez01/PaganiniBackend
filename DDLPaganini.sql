@@ -70,7 +70,7 @@ CREATE TABLE `metodo_pago` (
   `Estado` enum('activo','inactivo') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'inactivo',
   PRIMARY KEY (`Id`),
   KEY `idx_metodopago_user` (`UserId`),
-  CONSTRAINT `fk_metodopago_user` FOREIGN KEY (`UserId`) REFERENCES `User` (`id`) ON DELETE CASCADE
+  CONSTRAINT `fk_metodopago_user` FOREIGN KEY (`UserId`) REFERENCES `user` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `transacciones` (
