@@ -18,7 +18,7 @@ public class Ewallet {
     private MetodoPago metodoPago;
 
     @Convert(converter = CryptoConverter.class)
-    @Column(name = "Direccion", columnDefinition = "VARBINARY(255)", nullable = false)
+    @Column(name = "Direccion", columnDefinition = "VARCHAR(255)", nullable = false)
     private String direccion;
 
     @ManyToOne
