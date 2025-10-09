@@ -10,9 +10,9 @@ spring:
     serialization:
       write-dates-as-timestamps: false
   datasource:
-    url: jdbc:mysql://paganini-instance-1.cqj4co2cy9f2.us-east-1.rds.amazonaws.com:3306/paganini
-    username: admin
-    password: pagaNINI2025
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
   jpa:
     hibernate:
       ddl-auto: validate
@@ -21,15 +21,16 @@ spring:
     show-sql: true
 
 aws:
-  region: us-east-1
+  region: ${AWS_REGION}
   cognito:
-    userPoolId: us-east-1_cj7YOZppu
-    clientId: 7jqhejli4aohsqk137eg5f9fsf
+    userPoolId: ${AWS_COGNITO_USERPOOLID}
+    clientId: ${AWS_COGNITO_CLIENTID}
   sns:
-    platformApplicationArnAndroid: arn:aws:sns:us-east-1:091303277825:app/GCM/paganini-android
+    platformApplicationArnAndroid: ${AWS_SNS_PLATFORMAPPLICATIONARNANDROID}
+
 logging:
   level:
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
 
 encryption:
-  key: cGFnYW5pbmlwYWdhbmluaQ==
+  key: ${ENCRYPTION_KEY}
