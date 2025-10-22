@@ -11,9 +11,38 @@ services:
     env_file:
       - .env
     restart: unless-stopped
+    depends_on:
+      paganini-mysql:
+        condition: service_healthy
+    networks:
+      - paganini-network
+
+  paganini-mysql:
+    image: mysql:8.0
+    container_name: paganini-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: paganini
+      MYSQL_USER: ${SPRING_DATASOURCE_USERNAME}
+      MYSQL_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      # Mount your SQL init file(s) here
+      - ../DDLPaganini.sql:/docker-entrypoint-initdb.d/DDLPaganini.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
     networks:
       - paganini-network
 
 networks:
   paganini-network:
     driver: bridge
+
+volumes:
+  mysql_data:
