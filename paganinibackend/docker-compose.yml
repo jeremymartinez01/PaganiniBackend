@@ -31,7 +31,7 @@ services:
     volumes:
       - mysql_data:/var/lib/mysql
       # Mount your SQL init file(s) here
-      - ../DDLPaganini.sql:/docker-entrypoint-initdb.d/DDLPaganini.sql
+      #- ../DDLPaganini.sql:/docker-entrypoint-initdb.d/DDLPaganini.sql
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       interval: 5s
