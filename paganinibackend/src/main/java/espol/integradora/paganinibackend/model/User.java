@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+import org.hibernate.annotations.CreationTimestamp;
+
 @Entity
 @Table(name = "user")
 public class User {
@@ -27,7 +29,8 @@ public class User {
     @Column(name = "cognito_username", nullable = false, unique = true, length = 128)
     private String cognitoUsername;
 
-    @Column(name = "created_at", nullable = false, insertable = false, updatable = false)
+    @CreationTimestamp
+    @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
     @Column(name = "codigo_qr", columnDefinition = "TEXT")

@@ -75,6 +75,7 @@ public class AuthController {
                 .body(Map.of("error","Usuario no confirmado"));
         } catch (SdkClientException e) {
             // 503 Service Unavailable: error en Cognito
+            System.out.println(e);
             return ResponseEntity
                 .status(HttpStatus.SERVICE_UNAVAILABLE)
                 .body(Map.of("error","Error de comunicación con Cognito"));
