@@ -21,4 +21,5 @@ COPY --from=build /app/${JAR_FILE} app.jar
 EXPOSE 8080
 
 # Arranque del contenedor
-ENTRYPOINT ["java","-jar","/app/app.jar"]
+ENV JAVA_OPTS="-Xmx512m -Xms256m"
+ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar /app/app.jar"]
