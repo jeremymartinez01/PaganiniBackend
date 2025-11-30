@@ -17,7 +17,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
-import espol.integradora.paganinibackend.service.VerificationService;
 
 import espol.integradora.paganinibackend.model.constantes.EstadoPago;
 import espol.integradora.paganinibackend.model.constantes.TipoPago;
@@ -37,6 +36,7 @@ public class TransferService {
     private final ObjectMapper om;
     private final NotificationService notificationService;
     private final VerificationService verificationService;
+    private final GmailService gmailService;
 
     @Autowired
     public TransferService(
@@ -46,7 +46,8 @@ public class TransferService {
             ObjectMapper om,
             MetodoPagoRepository metodoRepo,
             NotificationService notificationService,
-            VerificationService verificationService) {
+            VerificationService verificationService,
+            GmailService gmailService) {
         this.userRepo = userRepo;
         this.txRepo = txRepo;
         this.prRepo = prRepo;
@@ -54,6 +55,7 @@ public class TransferService {
         this.metodoRepo = metodoRepo;
         this.notificationService = notificationService;
         this.verificationService = verificationService;
+        this.gmailService = gmailService;
     }
 
     // 1) Envío por correo
@@ -70,7 +72,19 @@ public class TransferService {
                     HttpStatus.UNAUTHORIZED,
                     "Código inválido o expirado");
         }
-        return registrarTransferenciaBloqueada(sender.getId(), receiver.getId(), monto, Transaccion.Origen.correo);
+        try {
+            TransferResultDto result = registrarTransferenciaBloqueada(sender.getId(), receiver.getId(), monto,
+                    Transaccion.Origen.correo);
+            this.gmailService.sendEmail(senderEmail,
+                    "Transacción exitosa PAGANINI",
+                    "El pago a " + receiverEmail + " por $" + monto + " fue procesado exitosamente.");
+            return result;
+        } catch (Exception e) {
+            this.gmailService.sendEmail(senderEmail,
+                    "Transacción fallida PAGANINI",
+                    "El pago a " + receiverEmail + " por $" + monto + " no pudo ser procesado.");
+            throw serverError("La transferencia falló inesperadamente.");
+        }
     }
 
     // 2) Envío por QR (correo en el QR; monto lo ingresa el usuario)
@@ -328,5 +342,9 @@ public class TransferService {
 
     private ResponseStatusException notFound(String msg) {
         return new ResponseStatusException(HttpStatus.NOT_FOUND, msg);
+    }
+
+    private ResponseStatusException serverError(String msg) {
+        return new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, msg);
     }
 }
