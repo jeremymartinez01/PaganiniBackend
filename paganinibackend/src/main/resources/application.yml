@@ -20,6 +20,10 @@ spring:
         physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
     show-sql: true
 
+gmail:
+  address: ${GMAIL_SENDER_ADDRESS}
+  password: ${GMAIL_SENDER_PASSWORD}
+  
 aws:
   region: ${AWS_REGION}
   cognito:

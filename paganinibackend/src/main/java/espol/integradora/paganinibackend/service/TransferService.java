@@ -17,6 +17,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
+import espol.integradora.paganinibackend.service.VerificationService;
 
 import espol.integradora.paganinibackend.model.constantes.EstadoPago;
 import espol.integradora.paganinibackend.model.constantes.TipoPago;
@@ -35,27 +36,40 @@ public class TransferService {
     private final MetodoPagoRepository metodoRepo;
     private final ObjectMapper om;
     private final NotificationService notificationService;
+    private final VerificationService verificationService;
 
     @Autowired
-    public TransferService(UserRepository userRepo,
-                           TransaccionRepository txRepo,
-                           PaymentRequestRepository prRepo,
-                           ObjectMapper om,MetodoPagoRepository metodoRepo,NotificationService notificationService) {
+    public TransferService(
+            UserRepository userRepo,
+            TransaccionRepository txRepo,
+            PaymentRequestRepository prRepo,
+            ObjectMapper om,
+            MetodoPagoRepository metodoRepo,
+            NotificationService notificationService,
+            VerificationService verificationService) {
         this.userRepo = userRepo;
         this.txRepo = txRepo;
         this.prRepo = prRepo;
         this.om = om;
         this.metodoRepo = metodoRepo;
         this.notificationService = notificationService;
+        this.verificationService = verificationService;
     }
 
     // 1) Envío por correo
     @Transactional
-    public TransferResultDto enviarPorCorreo(String senderEmail, String receiverEmail, BigDecimal monto) {
+    public TransferResultDto enviarPorCorreo(String senderEmail, String receiverEmail, BigDecimal monto,
+            String codigo) {
         User sender = userRepo.findByCorreo(senderEmail)
                 .orElseThrow(() -> badRequest("Emisor no existe"));
         User receiver = userRepo.findByCorreo(receiverEmail)
                 .orElseThrow(() -> badRequest("Receptor no existe"));
+        boolean verification = this.verificationService.verifyCode(senderEmail, codigo);
+        if (!verification) {
+            throw new ResponseStatusException(
+                    HttpStatus.UNAUTHORIZED,
+                    "Código inválido o expirado");
+        }
         return registrarTransferenciaBloqueada(sender.getId(), receiver.getId(), monto, Transaccion.Origen.correo);
     }
 
@@ -85,7 +99,8 @@ public class TransferService {
         PaymentRequest pr = localizarPaymentRequestActivo(receiver, pq.monto, pq.pid);
 
         // ejecutar transferencia (con locks de usuarios)
-        TransferResultDto res = registrarTransferenciaBloqueada(sender.getId(), receiver.getId(), pq.monto, Transaccion.Origen.qr_monto);
+        TransferResultDto res = registrarTransferenciaBloqueada(sender.getId(), receiver.getId(), pq.monto,
+                Transaccion.Origen.qr_monto);
 
         // cerrar el payment_request
         pr.setStatus(Status.inactivo);
@@ -94,8 +109,7 @@ public class TransferService {
         return res;
     }
 
-
-        // ======================= RECARGA =======================
+    // ======================= RECARGA =======================
     @Transactional
     public OperacionSaldoResult recargar(String email, Integer metodoPagoId, BigDecimal monto) {
         validarMonto(monto);
@@ -129,8 +143,7 @@ public class TransferService {
         return new OperacionSaldoResult(
                 tx.getId(), locked.getId(), mp.getId(),
                 "recarga", monto, locked.getSaldo(),
-                "Recarga exitosa"
-        );
+                "Recarga exitosa");
     }
 
     // ======================= RETIRO =======================
@@ -171,8 +184,7 @@ public class TransferService {
         return new OperacionSaldoResult(
                 tx.getId(), locked.getId(), mp.getId(),
                 "retiro", monto, locked.getSaldo(),
-                "Retiro exitoso"
-        );
+                "Retiro exitoso");
     }
 
     @Transactional(readOnly = true)
@@ -180,29 +192,28 @@ public class TransferService {
         User user = userRepo.findByCorreo(correo)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Usuario no existe"));
 
-        var envios   = txRepo.findEnviosByUser(user.getId());
-        var recibos  = txRepo.findRecibosByUser(user.getId());
+        var envios = txRepo.findEnviosByUser(user.getId());
+        var recibos = txRepo.findRecibosByUser(user.getId());
         var recargas = txRepo.findRecargasByUser(user.getId());
-        var retiros  = txRepo.findRetirosByUser(user.getId());
+        var retiros = txRepo.findRetirosByUser(user.getId());
 
         return new HistorialTransaccionesDto(envios, recibos, recargas, retiros);
     }
     // ======================= Núcleo común =======================
 
     private TransferResultDto registrarTransferenciaBloqueada(Integer senderId, Integer receiverId,
-                                                              BigDecimal monto, Transaccion.Origen origen) {
+            BigDecimal monto, Transaccion.Origen origen) {
         validarMonto(monto);
 
         // bloquear SIEMPRE en orden por id para evitar deadlocks
         Integer a = Math.min(senderId, receiverId);
         Integer b = Math.max(senderId, receiverId);
 
-        User first  = userRepo.lockById(a).orElseThrow(() -> notFound("Usuario " + a + " no existe"));
+        User first = userRepo.lockById(a).orElseThrow(() -> notFound("Usuario " + a + " no existe"));
         User second = userRepo.lockById(b).orElseThrow(() -> notFound("Usuario " + b + " no existe"));
 
-        User sender   = first.getId().equals(senderId)   ? first : second;
+        User sender = first.getId().equals(senderId) ? first : second;
         User receiver = first.getId().equals(receiverId) ? first : second;
-
 
         if (sender.getId().equals(receiver.getId()))
             throw badRequest("No puedes enviarte a ti mismo");
@@ -248,8 +259,7 @@ public class TransferService {
                 sender.getId(),
                 receiver.getId(),
                 sender.getSaldo(),
-                receiver.getSaldo()
-        );
+                receiver.getSaldo());
     }
 
     // ======================= Payment Request helpers =======================
@@ -270,10 +280,11 @@ public class TransferService {
             return pr;
         }
 
-        // Fallback: buscar por (requester, monto, activo) el más reciente y luego BLOQUEARLO
+        // Fallback: buscar por (requester, monto, activo) el más reciente y luego
+        // BLOQUEARLO
         PaymentRequest pr = prRepo.findTopByRequesterAndAmountAndStatusOrderByCreatedAtDesc(
-                        receiver, monto, Status.activo
-                ).orElseThrow(() -> badRequest("No hay payment request activo para ese monto"));
+                receiver, monto, Status.activo)
+                .orElseThrow(() -> badRequest("No hay payment request activo para ese monto"));
 
         // Tomamos lock ahora para evitar carrera antes de cerrarlo
         return prRepo.lockById(pr.getId())
@@ -308,8 +319,14 @@ public class TransferService {
         }
     }
 
-    private record ParsedQr(String correo, BigDecimal monto, Integer pid) {}
+    private record ParsedQr(String correo, BigDecimal monto, Integer pid) {
+    }
 
-    private ResponseStatusException badRequest(String msg){ return new ResponseStatusException(HttpStatus.BAD_REQUEST, msg); }
-    private ResponseStatusException notFound(String msg){ return new ResponseStatusException(HttpStatus.NOT_FOUND, msg); }
+    private ResponseStatusException badRequest(String msg) {
+        return new ResponseStatusException(HttpStatus.BAD_REQUEST, msg);
+    }
+
+    private ResponseStatusException notFound(String msg) {
+        return new ResponseStatusException(HttpStatus.NOT_FOUND, msg);
+    }
 }

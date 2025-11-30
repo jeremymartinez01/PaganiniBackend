@@ -19,7 +19,7 @@ public class TransferController {
 
     @PostMapping("/enviar/correo")
     public ResponseEntity<TransferResultDto> enviarPorCorreo(@RequestBody EnvioCorreoRequest req) {
-        var res = service.enviarPorCorreo(req.senderEmail(), req.receiverEmail(), req.monto());
+        var res = service.enviarPorCorreo(req.senderEmail(), req.receiverEmail(), req.monto(), req.codigo());
         return ResponseEntity.ok(res);
     }
 
