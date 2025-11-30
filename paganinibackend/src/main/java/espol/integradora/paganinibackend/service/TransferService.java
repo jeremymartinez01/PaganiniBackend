@@ -66,8 +66,8 @@ public class TransferService {
                 .orElseThrow(() -> badRequest("Emisor no existe"));
         User receiver = userRepo.findByCorreo(receiverEmail)
                 .orElseThrow(() -> badRequest("Receptor no existe"));
-        boolean verification = this.verificationService.verifyCode(senderEmail, codigo);
-        if (!verification) {
+        boolean verified = this.verificationService.verifyCode(senderEmail, codigo);
+        if (!verified) {
             throw new ResponseStatusException(
                     HttpStatus.UNAUTHORIZED,
                     "Código inválido o expirado");

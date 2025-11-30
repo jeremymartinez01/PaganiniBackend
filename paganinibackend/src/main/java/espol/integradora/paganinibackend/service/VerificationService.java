@@ -26,8 +26,8 @@ public class VerificationService {
 
             codes.put(email, new VerificationEntry(code, Instant.now().plusSeconds(300)));
 
-            String subject = "Your Verification Code";
-            String text = "Your verification code is: " + code + "\n\nThis code expires in 5 minutes.";
+            String subject = "Verificación de pago PAGANINI";
+            String text = "Tu código de verificación: " + code + "\n\nEste código expira en 5 minutos.";
 
             gmailService.sendEmail(email, subject, text);
 
