@@ -4,6 +4,14 @@ server:
     include-binding-errors: always
     include-stacktrace: never
 
+logging:
+  level:
+    org.springframework.web: DEBUG
+    org.springframework.web.servlet: DEBUG
+    org.springframework.web.filter.CommonsRequestLoggingFilter: DEBUG
+    org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping: TRACE
+
+
 spring:
   jackson:
     time-zone: America/Guayaquil
