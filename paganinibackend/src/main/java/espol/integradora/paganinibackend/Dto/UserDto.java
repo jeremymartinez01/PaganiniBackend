@@ -1,8 +1,8 @@
 package espol.integradora.paganinibackend.Dto;
 import java.math.BigDecimal;
-import java.util.List;
 
 public record UserDto(
+    int id,
     String nombre,
     String apellido,
     String correo,

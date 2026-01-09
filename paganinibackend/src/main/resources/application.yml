@@ -9,6 +9,7 @@ logging:
     org.springframework.web: DEBUG
     org.springframework.web.servlet: DEBUG
     org.springframework.web.filter.CommonsRequestLoggingFilter: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
     org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping: TRACE
 
 
@@ -45,10 +46,6 @@ aws:
     clientId: ${AWS_COGNITO_CLIENTID}
   sns:
     platformApplicationArnAndroid: ${AWS_SNS_PLATFORMAPPLICATIONARNANDROID}
-
-logging:
-  level:
-    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
 
 encryption:
   key: ${ENCRYPTION_KEY}
