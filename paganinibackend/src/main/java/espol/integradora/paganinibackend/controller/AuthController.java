@@ -104,6 +104,7 @@ public class AuthController {
     @PostMapping("/change-password")
     public ResponseEntity<?> changePassword(
             @RequestBody ChangePasswordDto dto) {
-        return ResponseEntity.ok(cognitoService.changePassword(dto.accessToken(), dto.currentPassword(), dto.newPassword()));
+        cognitoService.changePassword(dto.accessToken(), dto.currentPassword(), dto.newPassword());
+        return ResponseEntity.ok(Map.of("message", "Contraseña cambiada con éxito"));
     }
 }
