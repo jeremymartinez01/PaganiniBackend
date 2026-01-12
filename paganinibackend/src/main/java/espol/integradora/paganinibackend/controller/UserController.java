@@ -1,8 +1,11 @@
 package espol.integradora.paganinibackend.controller;
 
+import espol.integradora.paganinibackend.Dto.AuthResponse;
+import espol.integradora.paganinibackend.Dto.ChangePasswordDto;
 import espol.integradora.paganinibackend.Dto.SaldoResponse;
 import espol.integradora.paganinibackend.Dto.UserDto;
 import espol.integradora.paganinibackend.service.UserService;
+import espol.integradora.paganinibackend.service.AwsCognitoService;
 
 import java.util.Map;
 
