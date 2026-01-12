@@ -1,5 +1,6 @@
 package espol.integradora.paganinibackend.service;
 
+import org.springframework.mail.MailException;
 import org.springframework.stereotype.Service;
 
 import espol.integradora.paganinibackend.Dto.SendVerificationCodeDto;
@@ -21,6 +22,9 @@ public class VerificationService {
     }
 
     public SendVerificationCodeDto sendVerificationCode(String email) {
+        if(email.isBlank() || !email.matches("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$")){
+            return new SendVerificationCodeDto(false);
+        }
         try {
             String code = generateCode();
 
@@ -32,13 +36,16 @@ public class VerificationService {
             gmailService.sendEmail(email, subject, text);
 
             return new SendVerificationCodeDto(true);
-        } catch (Exception e) {
+        } catch (MailException e) {
             throw new RuntimeException("Failed to send verification code");
         }
     }
 
     public boolean verifyCode(String email, String submittedCode) {
-        VerificationEntry entry = codes.get(email);
+        if (email == null || submittedCode == null || email.isBlank() || submittedCode.isBlank()){
+            return false;
+        }
+        VerificationEntry entry = this.queryCode(email);
 
         if (entry == null) {
             return false;
@@ -64,6 +71,10 @@ public class VerificationService {
         return String.valueOf(number);
     }
 
-    private record VerificationEntry(String code, Instant expiresAt) {
+    protected VerificationEntry queryCode(String email){
+        return codes.get(email);
+    }
+
+    protected record VerificationEntry(String code, Instant expiresAt) {
     }
 }
